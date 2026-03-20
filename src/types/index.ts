@@ -105,7 +105,7 @@ export interface WorkingCalendarProps {
   /** Enable multi-date selection mode */
   multiSelect?: boolean;
   /** Fired when user clicks the Add button after selecting dates (multiSelect mode) */
-  onMultiSelect?: (dates: string[]) => void;
+  onMultiSelectDates?: (dates: string[]) => void;
   /** Fired when user clicks the + icon on a single cell (non-multiSelect mode) */
   onDateClick?: (date: string) => void;
 

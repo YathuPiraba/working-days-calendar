@@ -18,6 +18,7 @@ function App() {
         legend="Team calendar"
         events={mockEvents}
         multiSelect
+        onMultiSelectDates={(dates) => console.log("dates selected", dates)}
         onEventClick={(event) => console.log("event clicked", event)}
         onMonthYearChange={(month, year) =>
           console.log("month changed", month, year)

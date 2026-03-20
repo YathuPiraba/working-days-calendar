@@ -27,7 +27,7 @@ export default function WorkingCalendar({
   disableDate,
   disabledDates = [],
   multiSelect = false,
-  onMultiSelect,
+  onMultiSelectDates,
   onDateClick,
   events: eventsProp = [],
   renderEvent,
@@ -131,7 +131,7 @@ export default function WorkingCalendar({
     const sorted = Array.from(selectedDates)
       .filter((k) => !disabledSet.has(k))
       .sort();
-    onMultiSelect?.(sorted);
+    onMultiSelectDates?.(sorted);
   };
 
   const clearSelection = () => setSelectedDates(new Set());
