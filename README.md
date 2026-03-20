@@ -3,11 +3,11 @@
 A fully-featured, timezone-aware working days calendar component for React. Supports event pills, multi-date selection, overflow dialogs, custom renderers, and a mini-calendar date picker — all with zero UI framework dependencies.
 
 [![npm version](https://img.shields.io/npm/v/react-working-days-calendar.svg)](https://www.npmjs.com/package/react-working-days-calendar)
-[![license](https://img.shields.io/npm/l/react-working-days-calendar.svg)](https://github.com/YathuPiraba/working-days-calendar/blob/main/LICENSE)
+[![license](https://img.shields.io/npm/l/react-working-days-calendar.svg)](https://github.com/YathuPiraba/working-days-calendar/blob/master/LICENSE)
 
 ---
 
-![Working Days Calendar – overall view](https://raw.githubusercontent.com/YathuPiraba/working-days-calendar/main/docs/default.png)
+![Working Days Calendar – overall view](https://raw.githubusercontent.com/YathuPiraba/working-days-calendar/master/docs/default.png)
 
 ---
 
@@ -206,7 +206,7 @@ const events = [
 />
 ```
 
-![Multi-select mode](https://raw.githubusercontent.com/YathuPiraba/working-days-calendar/main/docs/multiselect.png)
+![Multi-select mode](https://raw.githubusercontent.com/YathuPiraba/working-days-calendar/master/docs/multiselect.png)
 
 ---
 
@@ -240,7 +240,7 @@ const [events, setEvents] = useState([]);
 
 When a calendar cell has more than 2 events, an overflow dialog lets users view all of them without cluttering the grid.
 
-![Event overflow dialog](https://raw.githubusercontent.com/YathuPiraba/working-days-calendar/main/docs/overflow.png)
+![Event overflow dialog](https://raw.githubusercontent.com/YathuPiraba/working-days-calendar/master/docs/overflow.png)
 
 ---
 
@@ -248,7 +248,7 @@ When a calendar cell has more than 2 events, an overflow dialog lets users view 
 
 A compact date picker for fast month and year navigation.
 
-![Mini calendar picker](https://raw.githubusercontent.com/YathuPiraba/working-days-calendar/main/docs/miniCalendar.png)
+![Mini calendar picker](https://raw.githubusercontent.com/YathuPiraba/working-days-calendar/master/docs/miniCalendar.png)
 
 ---
 
@@ -256,7 +256,7 @@ A compact date picker for fast month and year navigation.
 
 The legend strip is auto-generated from visible events in the current month view.
 
-![Legend strip](https://raw.githubusercontent.com/YathuPiraba/working-days-calendar/main/docs/legend.png)
+![Legend strip](https://raw.githubusercontent.com/YathuPiraba/working-days-calendar/master/docs/legend.png)
 
 ---
 
