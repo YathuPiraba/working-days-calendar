@@ -100,3 +100,16 @@ export function getForegroundColor(bg: string): string {
     return "#ffffff";
   }
 }
+
+export function formatDateLabel(dateKey: string): string {
+  try {
+    const d = new Date(dateKey + "T00:00:00");
+    return d.toLocaleDateString(undefined, {
+      weekday: "short",
+      month: "short",
+      day: "numeric",
+    });
+  } catch {
+    return dateKey;
+  }
+}

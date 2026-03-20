@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import "./MiniCalendar.css";
+import "../css/MiniCalendar.css";
 
 const MONTHS = [
   "January",

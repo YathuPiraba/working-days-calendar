@@ -1,11 +1,4 @@
-import {
-  useRef,
-  useMemo,
-  useState,
-  useCallback,
-  useEffect,
-  type ReactNode,
-} from "react";
+import { useRef, useMemo, useState } from "react";
 import {
   addMonths,
   eachDayOfInterval,
@@ -19,166 +12,19 @@ import {
   startOfMonth,
   startOfWeek,
 } from "date-fns";
-import "./WorkingCalendar.css";
 import MiniCalendar from "./MiniCalendar";
-
+import { OverflowDialog } from "./OverflowDialog";
+import { EventPill } from "./EventPill";
+import { LegendStrip } from "./LegendStrip";
+import { OverflowChip } from "./OverflowChip";
+import type { CalendarEvent, WorkingCalendarProps } from "../types";
 import {
-  type CalendarEvent,
-  type EventPillProps,
-  type WorkingCalendarProps,
-} from "../types";
-import {
-  DEFAULT_COLOR,
   DEFAULT_MAX_VISIBLE,
-  getForegroundColor,
   normalizeToDateKey,
   validateEvents,
   WEEKDAYS,
 } from "../utils";
-
-// ---------------------------------------------------------------------------
-// Default tooltip
-// ---------------------------------------------------------------------------
-
-function DefaultTooltip({ event }: { event: CalendarEvent }) {
-  return (
-    <div className="wc-tooltip-inner">
-      <div className="wc-tooltip-header">
-        <span
-          className="wc-tooltip-dot"
-          style={{ background: event.color ?? DEFAULT_COLOR }}
-        />
-        <span className="wc-tooltip-title">{event.label}</span>
-      </div>
-      {event.data && Object.keys(event.data).length > 0 && (
-        <dl className="wc-tooltip-data">
-          {Object.entries(event.data).map(([key, val]) => (
-            <div className="wc-tooltip-row" key={key}>
-              <dt className="wc-tooltip-key">{key}</dt>
-              <dd className="wc-tooltip-val">
-                {typeof val === "object" ? JSON.stringify(val) : String(val)}
-              </dd>
-            </div>
-          ))}
-        </dl>
-      )}
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// EventPill
-// ---------------------------------------------------------------------------
-
-function EventPill({
-  event,
-  trackIndex,
-  dateKey,
-  renderEvent,
-  renderTooltip,
-}: EventPillProps) {
-  const [tooltipOpen, setTooltipOpen] = useState(false);
-  const [tooltipStyle, setTooltipStyle] = useState<React.CSSProperties>({});
-  const pillRef = useRef<HTMLDivElement>(null);
-  const tooltipRef = useRef<HTMLDivElement>(null);
-
-  const color = event.color ?? DEFAULT_COLOR;
-  const fg = useMemo(() => getForegroundColor(color), [color]);
-
-  const handleMouseEnter = useCallback(() => setTooltipOpen(true), []);
-  const handleMouseLeave = useCallback(() => setTooltipOpen(false), []);
-
-  useEffect(() => {
-    if (!tooltipOpen || !pillRef.current || !tooltipRef.current) return;
-    const pillRect = pillRef.current.getBoundingClientRect();
-    const tipH = tooltipRef.current.offsetHeight;
-    const spaceBelow = window.innerHeight - pillRect.bottom;
-    setTooltipStyle(
-      spaceBelow < tipH + 12
-        ? { bottom: "calc(100% + 6px)", top: "auto" }
-        : { top: "calc(100% + 6px)", bottom: "auto" },
-    );
-  }, [tooltipOpen]);
-
-  const ctx = { dateKey, trackIndex, tooltipOpen };
-
-  const pillContent: ReactNode = renderEvent ? (
-    renderEvent(event, ctx)
-  ) : (
-    <div className="wc-event-pill" style={{ background: color, color: fg }}>
-      <span className="wc-event-label">{event.label}</span>
-    </div>
-  );
-
-  const tooltipContent: ReactNode = renderTooltip ? (
-    renderTooltip(event)
-  ) : (
-    <DefaultTooltip event={event} />
-  );
-
-  return (
-    <div
-      ref={pillRef}
-      className="wc-event-track"
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-      onClick={(e) => {
-        e.stopPropagation();
-        event.onClick?.(event);
-      }}
-    >
-      {pillContent}
-
-      {tooltipOpen && (
-        <div
-          ref={tooltipRef}
-          className="wc-tooltip"
-          style={tooltipStyle}
-          role="tooltip"
-        >
-          {tooltipContent}
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Dynamic legend
-// ---------------------------------------------------------------------------
-
-function LegendStrip({ events }: { events: CalendarEvent[] }) {
-  const entries = useMemo(() => {
-    const seen = new Set<string>();
-    const result: { color: string; label: string }[] = [];
-    for (const ev of events) {
-      const color = ev.color ?? DEFAULT_COLOR;
-      const key = `${color}::${ev.label}`;
-      if (!seen.has(key)) {
-        seen.add(key);
-        result.push({ color, label: ev.label });
-      }
-    }
-    return result;
-  }, [events]);
-
-  if (entries.length === 0) return null;
-
-  return (
-    <div className="wc-legend">
-      {entries.map(({ color, label }) => (
-        <div className="wc-legend-item" key={`${color}::${label}`}>
-          <span className="wc-legend-dot" style={{ background: color }} />
-          <span className="wc-legend-label">{label}</span>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Main component
-// ---------------------------------------------------------------------------
+import "../css/WorkingCalendar.css";
 
 export default function WorkingCalendar({
   legend,
@@ -191,7 +37,7 @@ export default function WorkingCalendar({
   maxVisibleEvents = DEFAULT_MAX_VISIBLE,
   renderEvent,
   renderTooltip,
-  onOverflowClick,
+  onEventClick,
   hideLegend = false,
 }: WorkingCalendarProps = {}) {
   const today = new Date();
@@ -277,6 +123,13 @@ export default function WorkingCalendar({
   };
 
   const clearSelection = () => setSelectedDates(new Set());
+
+  // Overflow dialog state
+  const [overflowDialog, setOverflowDialog] = useState<{
+    dateKey: string;
+    events: CalendarEvent[];
+    anchorRef: React.RefObject<HTMLButtonElement>;
+  } | null>(null);
 
   const showLegend = !hideLegend && validatedEvents.length > 0;
 
@@ -450,6 +303,7 @@ export default function WorkingCalendar({
                           dateKey={dayKey}
                           renderEvent={renderEvent}
                           renderTooltip={renderTooltip}
+                          onEventClick={onEventClick}
                         />
                       ))}
                     </div>
@@ -457,16 +311,18 @@ export default function WorkingCalendar({
 
                   {/* Overflow chip */}
                   {hiddenEvents.length > 0 && (
-                    <button
-                      className="wc-overflow-chip"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onOverflowClick?.(dayKey, hiddenEvents);
-                      }}
-                      aria-label={`${hiddenEvents.length} more events`}
-                    >
-                      +{hiddenEvents.length} more
-                    </button>
+                    <OverflowChip
+                      dayKey={dayKey}
+                      hiddenCount={hiddenEvents.length}
+                      allCellEvents={cellEvents}
+                      onOpen={(ref) =>
+                        setOverflowDialog({
+                          dateKey: dayKey,
+                          events: cellEvents,
+                          anchorRef: ref,
+                        })
+                      }
+                    />
                   )}
 
                   {isDisabled && (
@@ -485,6 +341,18 @@ export default function WorkingCalendar({
 
       {/* Dynamic event legend */}
       {showLegend && <LegendStrip events={validatedEvents} />}
+
+      {/* Overflow dialog */}
+      {overflowDialog && (
+        <OverflowDialog
+          dateKey={overflowDialog.dateKey}
+          events={overflowDialog.events}
+          anchorRef={overflowDialog.anchorRef}
+          onClose={() => setOverflowDialog(null)}
+          onEventClick={onEventClick}
+          renderTooltip={renderTooltip}
+        />
+      )}
     </div>
   );
 }

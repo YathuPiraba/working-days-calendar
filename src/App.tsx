@@ -1,6 +1,6 @@
 import "./App.css";
-import { mockEvents } from "./components/mockEvents";
 import WorkingCalendar from "./components/WorkingCalendar";
+import { mockEvents } from "./mockEvents";
 
 function App() {
   return (
@@ -19,9 +19,7 @@ function App() {
         events={mockEvents}
         maxVisibleEvents={3}
         onAddClick={(date) => console.log("add on", date)}
-        onOverflowClick={(date, hidden) =>
-          console.log("overflow on", date, hidden)
-        }
+        onEventClick={(event) => console.log("event clicked", event)}
       />
     </div>
   );

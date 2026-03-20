@@ -34,6 +34,22 @@ export interface EventPillProps {
   dateKey: string;
   renderEvent?: WorkingCalendarProps["renderEvent"];
   renderTooltip?: WorkingCalendarProps["renderTooltip"];
+  onEventClick?: (event: CalendarEvent) => void;
+}
+
+export interface OverflowDialogProps {
+  /** The date key ('yyyy-MM-dd') whose events are shown */
+  dateKey: string;
+  /** All events for that date (not just the hidden ones) */
+  events: CalendarEvent[];
+  /** Ref to the overflow chip button — used to position the dialog */
+  anchorRef: React.RefObject<HTMLButtonElement>;
+  /** Called when the dialog should close */
+  onClose: () => void;
+  /** Forwarded from WorkingCalendarProps — fires when user clicks an event */
+  onEventClick?: (event: CalendarEvent) => void;
+  /** Forwarded from WorkingCalendarProps — custom right-page renderer */
+  renderTooltip?: (event: CalendarEvent) => ReactNode;
 }
 
 // ---------------------------------------------------------------------------
@@ -97,15 +113,16 @@ export interface WorkingCalendarProps {
    */
   renderEvent?: (event: CalendarEvent, ctx: EventRenderContext) => ReactNode;
   /**
-   * Custom renderer for the hover tooltip. Return any ReactNode.
-   * Falls back to the default data-field list when omitted.
+   * Custom renderer for the hover tooltip AND the overflow dialog right-page.
+   * Return any ReactNode. Falls back to the default data-field view when omitted.
    */
   renderTooltip?: (event: CalendarEvent) => ReactNode;
   /**
-   * Fired when the user clicks the "+N more" overflow chip.
-   * Receives the date key and the full list of hidden events.
+   * Fired whenever the user clicks any event pill — in the grid or inside the
+   * overflow dialog. Receives the full CalendarEvent so you can open a drawer,
+   * navigate, or update state.
    */
-  onOverflowClick?: (dateKey: string, hiddenEvents: CalendarEvent[]) => void;
+  onEventClick?: (event: CalendarEvent) => void;
 
   // — Legend —
   /**
@@ -113,4 +130,11 @@ export interface WorkingCalendarProps {
    * Defaults to false (legend is shown whenever events are present).
    */
   hideLegend?: boolean;
+}
+
+export interface OverflowChipProps {
+  dayKey: string;
+  hiddenCount: number;
+  allCellEvents: CalendarEvent[];
+  onOpen: (ref: React.RefObject<HTMLButtonElement>) => void;
 }
