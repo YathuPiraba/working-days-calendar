@@ -1,0 +1,190 @@
+.mini-cal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+}
+
+.mini-cal-popup {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 200;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  padding: 20px;
+  width: 300px;
+  animation: popIn 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+@keyframes popIn {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) scale(0.92) translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) scale(1) translateY(0);
+  }
+}
+
+/* Typing inputs row */
+.mini-cal-inputs {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.mini-cal-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.mini-cal-input-group label {
+  font-size: 10px;
+  font-family: var(--font-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.mini-cal-input-group input {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  padding: 7px 10px;
+  width: 100%;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.mini-cal-input-group input:focus {
+  border-color: var(--accent);
+}
+
+.mini-cal-input-group input::-webkit-inner-spin-button,
+.mini-cal-input-group input::-webkit-outer-spin-button {
+  opacity: 1;
+}
+
+/* Scroll columns */
+.mini-cal-scrollers {
+  display: flex;
+  gap: 8px;
+}
+
+.mini-cal-scroll-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.mini-cal-scroll-col h4 {
+  font-size: 10px;
+  font-family: var(--font-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  text-align: center;
+  margin-bottom: 2px;
+}
+
+.mini-cal-scroll-list {
+  max-height: 180px;
+  overflow-y: auto;
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+.mini-cal-scroll-list::-webkit-scrollbar {
+  width: 4px;
+}
+
+.mini-cal-scroll-list::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 99px;
+}
+
+.mini-cal-scroll-item {
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--text-secondary);
+  transition:
+    background 0.1s,
+    color 0.1s;
+  text-align: center;
+  font-family: var(--font-sans);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mini-cal-scroll-item:hover {
+  background: var(--accent-soft);
+  color: var(--text-primary);
+}
+
+.mini-cal-scroll-item.selected {
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+/* Go button */
+.mini-cal-go {
+  width: 100%;
+  padding: 9px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  letter-spacing: 0.03em;
+  transition:
+    opacity 0.15s,
+    transform 0.1s;
+}
+
+.mini-cal-go:hover {
+  opacity: 0.88;
+}
+
+.mini-cal-go:active {
+  transform: scale(0.98);
+}
+
+.mini-cal-divider {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-muted);
+  font-size: 11px;
+  font-family: var(--font-mono);
+}
+
+.mini-cal-divider::before,
+.mini-cal-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
