@@ -112,11 +112,7 @@ export interface WorkingCalendarProps {
   // — Event system —
   /** Events to render in the calendar cells */
   events?: CalendarEvent[];
-  /**
-   * Maximum number of event pills to show per cell before collapsing into
-   * a "+N more" chip. Defaults to 3.
-   */
-  maxVisibleEvents?: number;
+
   /**
    * Custom renderer for each event pill. Return any ReactNode.
    * Falls back to the default colored pill when omitted.

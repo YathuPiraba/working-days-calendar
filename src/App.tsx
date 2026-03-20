@@ -17,7 +17,7 @@ function App() {
       <WorkingCalendar
         legend="Team calendar"
         events={mockEvents}
-        onDateClick={(date) => console.log("add on", date)}
+        multiSelect
         onEventClick={(event) => console.log("event clicked", event)}
         onMonthYearChange={(month, year) =>
           console.log("month changed", month, year)

@@ -30,7 +30,6 @@ export default function WorkingCalendar({
   onMultiSelect,
   onDateClick,
   events: eventsProp = [],
-  maxVisibleEvents = 2,
   renderEvent,
   renderTooltip,
   onEventClick,
@@ -271,8 +270,8 @@ export default function WorkingCalendar({
                 ? []
                 : (eventsByDate.get(dayKey) ?? []);
               const hasEvents = cellEvents.length > 0;
-              const visibleEvents = cellEvents.slice(0, maxVisibleEvents);
-              const hiddenEvents = cellEvents.slice(maxVisibleEvents);
+              const visibleEvents = cellEvents.slice(0, 2);
+              const hiddenEvents = cellEvents.slice(2);
 
               return (
                 <div
