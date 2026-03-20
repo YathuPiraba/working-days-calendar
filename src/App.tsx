@@ -13,7 +13,11 @@ function App() {
         padding: "32px 16px",
       }}
     >
-      <WorkingCalendar />
+      <WorkingCalendar
+        legend="Working "
+        multiSelect
+        onMultiSelect={(dates) => console.log(dates)}
+      />
     </div>
   );
 }
