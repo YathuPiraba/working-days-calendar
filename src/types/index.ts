@@ -6,7 +6,7 @@ import type { ReactNode, RefObject } from "react";
 
 export interface CalendarEvent {
   /** Unique identifier for the event */
-  id: string;
+  id: string | number;
   /** Target date in any supported format: 'yyyy-MM-dd' | 'MM/dd/yyyy' | 'dd-MM-yyyy' | Date | timestamp */
   date: string | Date | number;
   /** Short display label shown in the event pill */
