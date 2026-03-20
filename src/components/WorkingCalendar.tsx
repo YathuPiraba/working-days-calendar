@@ -1,4 +1,11 @@
-import { useRef, useMemo, useState } from "react";
+import {
+  useRef,
+  useMemo,
+  useState,
+  useCallback,
+  useEffect,
+  type ReactNode,
+} from "react";
 import {
   addMonths,
   eachDayOfInterval,
@@ -9,79 +16,183 @@ import {
   getWeek,
   isToday,
   isWeekend,
-  isValid,
-  parseISO,
   startOfMonth,
   startOfWeek,
 } from "date-fns";
 import "./WorkingCalendar.css";
 import MiniCalendar from "./MiniCalendar";
 
-const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+import {
+  type CalendarEvent,
+  type EventPillProps,
+  type WorkingCalendarProps,
+} from "../types";
+import {
+  DEFAULT_COLOR,
+  DEFAULT_MAX_VISIBLE,
+  getForegroundColor,
+  normalizeToDateKey,
+  validateEvents,
+  WEEKDAYS,
+} from "../utils";
 
-function getWorkingDays(days: Date[]): number {
-  return days.filter((d) => !isWeekend(d)).length;
+// ---------------------------------------------------------------------------
+// Default tooltip
+// ---------------------------------------------------------------------------
+
+function DefaultTooltip({ event }: { event: CalendarEvent }) {
+  return (
+    <div className="wc-tooltip-inner">
+      <div className="wc-tooltip-header">
+        <span
+          className="wc-tooltip-dot"
+          style={{ background: event.color ?? DEFAULT_COLOR }}
+        />
+        <span className="wc-tooltip-title">{event.label}</span>
+      </div>
+      {event.data && Object.keys(event.data).length > 0 && (
+        <dl className="wc-tooltip-data">
+          {Object.entries(event.data).map(([key, val]) => (
+            <div className="wc-tooltip-row" key={key}>
+              <dt className="wc-tooltip-key">{key}</dt>
+              <dd className="wc-tooltip-val">
+                {typeof val === "object" ? JSON.stringify(val) : String(val)}
+              </dd>
+            </div>
+          ))}
+        </dl>
+      )}
+    </div>
+  );
 }
 
-/**
- * Normalizes any date input the user might pass into a 'yyyy-MM-dd' string.
- * Accepts: 'yyyy-MM-dd' | 'MM/dd/yyyy' | 'dd-MM-yyyy' | Date object | timestamp number.
- * Invalid values are silently dropped so one bad entry never breaks the whole calendar.
- */
-function normalizeToDateKey(raw: string | Date | number): string | null {
-  try {
-    // Already a Date object or timestamp
-    if (raw instanceof Date || typeof raw === "number") {
-      const d = new Date(raw);
-      return isValid(d) ? format(d, "yyyy-MM-dd") : null;
-    }
-    // ISO string yyyy-MM-dd
-    if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
-      const d = parseISO(raw);
-      return isValid(d) ? raw : null;
-    }
-    // MM/dd/yyyy  (US locale format)
-    if (/^\d{2}\/\d{2}\/\d{4}$/.test(raw)) {
-      const [mm, dd, yyyy] = raw.split("/");
-      const d = new Date(`${yyyy}-${mm}-${dd}`);
-      return isValid(d) ? format(d, "yyyy-MM-dd") : null;
-    }
-    // dd-MM-yyyy  (European locale format)
-    if (/^\d{2}-\d{2}-\d{4}$/.test(raw)) {
-      const [dd, mm, yyyy] = raw.split("-");
-      const d = new Date(`${yyyy}-${mm}-${dd}`);
-      return isValid(d) ? format(d, "yyyy-MM-dd") : null;
-    }
-    // Fallback: let Date constructor try — handles RFC strings etc.
-    const d = new Date(raw);
-    return isValid(d) ? format(d, "yyyy-MM-dd") : null;
-  } catch {
-    return null;
-  }
+// ---------------------------------------------------------------------------
+// EventPill
+// ---------------------------------------------------------------------------
+
+function EventPill({
+  event,
+  trackIndex,
+  dateKey,
+  renderEvent,
+  renderTooltip,
+}: EventPillProps) {
+  const [tooltipOpen, setTooltipOpen] = useState(false);
+  const [tooltipStyle, setTooltipStyle] = useState<React.CSSProperties>({});
+  const pillRef = useRef<HTMLDivElement>(null);
+  const tooltipRef = useRef<HTMLDivElement>(null);
+
+  const color = event.color ?? DEFAULT_COLOR;
+  const fg = useMemo(() => getForegroundColor(color), [color]);
+
+  const handleMouseEnter = useCallback(() => setTooltipOpen(true), []);
+  const handleMouseLeave = useCallback(() => setTooltipOpen(false), []);
+
+  useEffect(() => {
+    if (!tooltipOpen || !pillRef.current || !tooltipRef.current) return;
+    const pillRect = pillRef.current.getBoundingClientRect();
+    const tipH = tooltipRef.current.offsetHeight;
+    const spaceBelow = window.innerHeight - pillRect.bottom;
+    setTooltipStyle(
+      spaceBelow < tipH + 12
+        ? { bottom: "calc(100% + 6px)", top: "auto" }
+        : { top: "calc(100% + 6px)", bottom: "auto" },
+    );
+  }, [tooltipOpen]);
+
+  const ctx = { dateKey, trackIndex, tooltipOpen };
+
+  const pillContent: ReactNode = renderEvent ? (
+    renderEvent(event, ctx)
+  ) : (
+    <div className="wc-event-pill" style={{ background: color, color: fg }}>
+      <span className="wc-event-label">{event.label}</span>
+    </div>
+  );
+
+  const tooltipContent: ReactNode = renderTooltip ? (
+    renderTooltip(event)
+  ) : (
+    <DefaultTooltip event={event} />
+  );
+
+  return (
+    <div
+      ref={pillRef}
+      className="wc-event-track"
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      onClick={(e) => {
+        e.stopPropagation();
+        event.onClick?.(event);
+      }}
+    >
+      {pillContent}
+
+      {tooltipOpen && (
+        <div
+          ref={tooltipRef}
+          className="wc-tooltip"
+          style={tooltipStyle}
+          role="tooltip"
+        >
+          {tooltipContent}
+        </div>
+      )}
+    </div>
+  );
 }
 
-interface WorkingCalendarProps {
-  legend?: string;
-  disableDate?: string | Date | number;
-  disabledDates?: Array<string | Date | number>;
-  multiSelect?: boolean;
-  onAddClick?: (date: string) => void;
-  onMultiSelect?: (dates: string[]) => void;
-  weekendDays?: number;
-  workingDays?: number;
-  workHours?: number;
+// ---------------------------------------------------------------------------
+// Dynamic legend
+// ---------------------------------------------------------------------------
+
+function LegendStrip({ events }: { events: CalendarEvent[] }) {
+  const entries = useMemo(() => {
+    const seen = new Set<string>();
+    const result: { color: string; label: string }[] = [];
+    for (const ev of events) {
+      const color = ev.color ?? DEFAULT_COLOR;
+      const key = `${color}::${ev.label}`;
+      if (!seen.has(key)) {
+        seen.add(key);
+        result.push({ color, label: ev.label });
+      }
+    }
+    return result;
+  }, [events]);
+
+  if (entries.length === 0) return null;
+
+  return (
+    <div className="wc-legend">
+      {entries.map(({ color, label }) => (
+        <div className="wc-legend-item" key={`${color}::${label}`}>
+          <span className="wc-legend-dot" style={{ background: color }} />
+          <span className="wc-legend-label">{label}</span>
+        </div>
+      ))}
+    </div>
+  );
 }
+
+// ---------------------------------------------------------------------------
+// Main component
+// ---------------------------------------------------------------------------
 
 export default function WorkingCalendar({
   legend,
   disableDate,
   disabledDates = [],
   multiSelect = false,
-  onAddClick,
   onMultiSelect,
-  weekendDays: weekendDaysProp,
-  workingDays: workingDaysProp,
-  workHours: workHoursProp,
+  onAddClick,
+  events: eventsProp = [],
+  maxVisibleEvents = DEFAULT_MAX_VISIBLE,
+  renderEvent,
+  renderTooltip,
+  onOverflowClick,
+  hideLegend = false,
 }: WorkingCalendarProps = {}) {
   const today = new Date();
   const [viewDate, setViewDate] = useState(
@@ -91,30 +202,49 @@ export default function WorkingCalendar({
   const [selectedDates, setSelectedDates] = useState<Set<string>>(new Set());
   const monthBtnRef = useRef<HTMLButtonElement>(null);
 
+  // Validate events at runtime
+  const validatedEvents = useMemo(() => {
+    const { valid, invalid } = validateEvents(eventsProp as unknown[]);
+    if (invalid.length > 0 && import.meta.env.MODE !== "production") {
+      console.warn(
+        `[WorkingCalendar] ${invalid.length} event(s) failed validation and were skipped:`,
+        invalid,
+      );
+    }
+    return valid;
+  }, [eventsProp]);
+
+  // Group events by date key, sorted by priority desc
+  const eventsByDate = useMemo(() => {
+    const map = new Map<string, CalendarEvent[]>();
+    for (const ev of validatedEvents) {
+      const key = normalizeToDateKey(ev.date);
+      if (!key) continue;
+      if (!map.has(key)) map.set(key, []);
+      map.get(key)!.push(ev);
+    }
+    for (const [key, bucket] of map) {
+      map.set(
+        key,
+        [...bucket].sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0)),
+      );
+    }
+    return map;
+  }, [validatedEvents]);
+
   const disabledSet = useMemo<Set<string>>(() => {
     const all: Array<string | Date | number> = [...disabledDates];
     if (disableDate !== undefined) all.push(disableDate);
-    const keys = all
-      .map(normalizeToDateKey)
-      .filter((k): k is string => k !== null);
-    return new Set(keys);
+    return new Set(
+      all.map(normalizeToDateKey).filter((k): k is string => k !== null),
+    );
   }, [disableDate, disabledDates]);
 
   const monthStart = startOfMonth(viewDate);
   const monthEnd = endOfMonth(viewDate);
   const gridStart = startOfWeek(monthStart, { weekStartsOn: 0 });
   const gridEnd = endOfWeek(monthEnd, { weekStartsOn: 0 });
-
   const allDays = eachDayOfInterval({ start: gridStart, end: gridEnd });
-  const monthDays = eachDayOfInterval({ start: monthStart, end: monthEnd });
-
-  const totalDays = monthDays.length;
-  const computedWorkingDays = getWorkingDays(monthDays);
-  const computedWeekendDays = totalDays - computedWorkingDays;
-
-  const statWorkingDays = workingDaysProp ?? computedWorkingDays;
-  const statWeekendDays = weekendDaysProp ?? computedWeekendDays;
-  const statWorkHours = workHoursProp ?? computedWorkingDays * 8;
 
   const rows: Date[][] = [];
   for (let i = 0; i < allDays.length; i += 7) {
@@ -125,11 +255,8 @@ export default function WorkingCalendar({
   const handleNext = () => setViewDate((d) => addMonths(d, 1));
   const handleToday = () =>
     setViewDate(new Date(today.getFullYear(), today.getMonth(), 1));
-
-  const handleMiniSelect = (month: number, year: number) => {
+  const handleMiniSelect = (month: number, year: number) =>
     setViewDate(new Date(year, month, 1));
-  };
-
   const isOutside = (d: Date) => d < monthStart || d > monthEnd;
 
   const toggleDaySelection = (day: Date) => {
@@ -150,6 +277,8 @@ export default function WorkingCalendar({
   };
 
   const clearSelection = () => setSelectedDates(new Set());
+
+  const showLegend = !hideLegend && validatedEvents.length > 0;
 
   return (
     <div className="wc-wrapper">
@@ -205,7 +334,6 @@ export default function WorkingCalendar({
           </button>
         </div>
 
-        {/* Right side actions */}
         <div className="wc-header-actions">
           <button className="wc-today-btn" onClick={handleToday}>
             Today
@@ -260,6 +388,11 @@ export default function WorkingCalendar({
               const dayKey = format(day, "yyyy-MM-dd");
               const isDisabled = !outside && disabledSet.has(dayKey);
               const isSelected = multiSelect && selectedDates.has(dayKey);
+              const cellEvents = outside
+                ? []
+                : (eventsByDate.get(dayKey) ?? []);
+              const visibleEvents = cellEvents.slice(0, maxVisibleEvents);
+              const hiddenEvents = cellEvents.slice(maxVisibleEvents);
 
               return (
                 <div
@@ -273,6 +406,7 @@ export default function WorkingCalendar({
                     isDisabled ? "disabled" : "",
                     multiSelect && !outside && !isDisabled ? "selectable" : "",
                     isSelected ? "selected" : "",
+                    cellEvents.length > 0 ? "has-events" : "",
                   ]
                     .filter(Boolean)
                     .join(" ")}
@@ -281,24 +415,58 @@ export default function WorkingCalendar({
                       toggleDaySelection(day);
                   }}
                 >
-                  <span className="wc-day-num">{format(day, "d")}</span>
-                  {!multiSelect && !outside && !isDisabled && onAddClick && (
-                    <button
-                      className="wc-add-btn"
-                      aria-label={`Add event on ${format(day, "PPP")}`}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        if (!multiSelect && !isDisabled) onAddClick?.(dayKey);
-                      }}
-                    >
-                      +
-                    </button>
+                  {/* Day number + add button row */}
+                  <div className="wc-cell-top">
+                    <span className="wc-day-num">{format(day, "d")}</span>
+
+                    {!multiSelect && !outside && !isDisabled && onAddClick && (
+                      <button
+                        className="wc-add-btn"
+                        aria-label={`Add event on ${format(day, "PPP")}`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onAddClick(dayKey);
+                        }}
+                      >
+                        +
+                      </button>
+                    )}
+
+                    {isSelected && (
+                      <span className="wc-check-tick" aria-hidden="true">
+                        ✓
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Event track pills */}
+                  {visibleEvents.length > 0 && (
+                    <div className="wc-events">
+                      {visibleEvents.map((ev, trackIndex) => (
+                        <EventPill
+                          key={ev.id}
+                          event={ev}
+                          trackIndex={trackIndex}
+                          dateKey={dayKey}
+                          renderEvent={renderEvent}
+                          renderTooltip={renderTooltip}
+                        />
+                      ))}
+                    </div>
                   )}
 
-                  {isSelected && (
-                    <span className="wc-check-tick" aria-hidden="true">
-                      ✓
-                    </span>
+                  {/* Overflow chip */}
+                  {hiddenEvents.length > 0 && (
+                    <button
+                      className="wc-overflow-chip"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onOverflowClick?.(dayKey, hiddenEvents);
+                      }}
+                      aria-label={`${hiddenEvents.length} more events`}
+                    >
+                      +{hiddenEvents.length} more
+                    </button>
                   )}
 
                   {isDisabled && (
@@ -315,30 +483,8 @@ export default function WorkingCalendar({
         </div>
       </div>
 
-      {/* Stats strip */}
-      <div className="wc-stats">
-        <div className="wc-stat">
-          <div className="wc-stat-dot accent" />
-          <div className="wc-stat-info">
-            <span className="wc-stat-value">{statWorkingDays}</span>
-            <span className="wc-stat-label">Working days</span>
-          </div>
-        </div>
-        <div className="wc-stat">
-          <div className="wc-stat-dot muted" />
-          <div className="wc-stat-info">
-            <span className="wc-stat-value">{statWeekendDays}</span>
-            <span className="wc-stat-label">Weekend days</span>
-          </div>
-        </div>
-        <div className="wc-stat">
-          <div className="wc-stat-dot success" />
-          <div className="wc-stat-info">
-            <span className="wc-stat-value">{statWorkHours}</span>
-            <span className="wc-stat-label">Work hours</span>
-          </div>
-        </div>
-      </div>
+      {/* Dynamic event legend */}
+      {showLegend && <LegendStrip events={validatedEvents} />}
     </div>
   );
 }

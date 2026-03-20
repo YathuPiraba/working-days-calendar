@@ -1,4 +1,5 @@
 import "./App.css";
+import { mockEvents } from "./components/mockEvents";
 import WorkingCalendar from "./components/WorkingCalendar";
 
 function App() {
@@ -14,9 +15,13 @@ function App() {
       }}
     >
       <WorkingCalendar
-        onAddClick={(date) => {
-          console.log(date);
-        }}
+        legend="Team calendar"
+        events={mockEvents}
+        maxVisibleEvents={3}
+        onAddClick={(date) => console.log("add on", date)}
+        onOverflowClick={(date, hidden) =>
+          console.log("overflow on", date, hidden)
+        }
       />
     </div>
   );

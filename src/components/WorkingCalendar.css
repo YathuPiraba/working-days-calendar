@@ -1,9 +1,11 @@
+/* ─── Wrapper ─────────────────────────────────────────────────────────────── */
 .wc-wrapper {
   width: 100%;
   max-width: 900px;
   margin: 0 auto;
 }
 
+/* ─── Header bar ──────────────────────────────────────────────────────────── */
 .wc-header-bar {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
@@ -21,6 +23,7 @@
   padding-left: 5px;
 }
 
+/* ─── Navigation ──────────────────────────────────────────────────────────── */
 .wc-nav {
   display: flex;
   align-items: center;
@@ -91,6 +94,7 @@
   flex-shrink: 0;
 }
 
+/* ─── Header actions ──────────────────────────────────────────────────────── */
 .wc-header-actions {
   display: flex;
   align-items: center;
@@ -124,7 +128,6 @@
   color: var(--accent);
 }
 
-/* Multi-select: header Add button */
 .wc-header-add-btn {
   display: flex;
   align-items: center;
@@ -154,7 +157,6 @@
 .wc-header-add-btn:not(:disabled):hover {
   opacity: 0.88;
 }
-
 .wc-header-add-btn:not(:disabled):active {
   transform: scale(0.97);
 }
@@ -175,7 +177,6 @@
   text-align: center;
 }
 
-/* Multi-select: clear button */
 .wc-clear-btn {
   height: 36px;
   padding: 0 12px;
@@ -198,7 +199,7 @@
   color: var(--danger);
 }
 
-/* Calendar grid */
+/* ─── Calendar shell ──────────────────────────────────────────────────────── */
 .wc-calendar {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -207,6 +208,7 @@
   box-shadow: var(--shadow);
 }
 
+/* ─── Day headers ─────────────────────────────────────────────────────────── */
 .wc-day-headers {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
@@ -224,18 +226,19 @@
 }
 
 .wc-day-header.weekend {
-  color: var(--text-muted);
   opacity: 0.6;
 }
 
+/* ─── Grid ────────────────────────────────────────────────────────────────── */
 .wc-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
 }
 
+/* ─── Cell ────────────────────────────────────────────────────────────────── */
 .wc-cell {
-  min-height: 88px;
-  padding: 10px 12px;
+  min-height: 100px;
+  padding: 8px 8px 28px; /* bottom room for week badge */
   border-right: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
   cursor: default;
@@ -243,14 +246,12 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 3px;
 }
 
 .wc-cell:nth-child(7n) {
   border-right: none;
 }
-
-/* remove bottom border from last row */
 .wc-cell.last-row {
   border-bottom: none;
 }
@@ -280,7 +281,46 @@
   right: 0;
   height: 2px;
   background: var(--accent);
-  border-radius: 0 0 2px 2px;
+}
+
+.wc-cell.selectable {
+  cursor: pointer;
+}
+
+.wc-cell.selected {
+  background: var(--accent-soft) !important;
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+.wc-cell.disabled {
+  cursor: not-allowed;
+  background: repeating-linear-gradient(
+    135deg,
+    transparent,
+    transparent 4px,
+    rgba(0, 0, 0, 0.04) 4px,
+    rgba(0, 0, 0, 0.04) 5px
+  );
+}
+
+.wc-cell.disabled:hover {
+  background: repeating-linear-gradient(
+    135deg,
+    transparent,
+    transparent 4px,
+    rgba(0, 0, 0, 0.04) 4px,
+    rgba(0, 0, 0, 0.04) 5px
+  );
+}
+
+/* ─── Cell top row (day number + add button) ──────────────────────────────── */
+.wc-cell-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 26px;
+  margin-bottom: 2px;
 }
 
 .wc-day-num {
@@ -302,11 +342,29 @@
   color: #fff;
 }
 
-/* + add button — top-right corner of each cell */
+.wc-cell.selected .wc-day-num {
+  background: var(--accent);
+  color: #fff;
+}
+
+.wc-cell.weekend-cell .wc-day-num {
+  color: var(--text-muted);
+}
+.wc-cell.disabled .wc-day-num {
+  color: var(--text-muted);
+  opacity: 0.5;
+}
+
+.wc-check-tick {
+  font-size: 11px;
+  color: var(--accent);
+  font-weight: 700;
+  line-height: 1;
+  margin-left: auto;
+}
+
+/* ─── + add button ────────────────────────────────────────────────────────── */
 .wc-add-btn {
-  position: absolute;
-  top: 7px;
-  right: 8px;
   width: 20px;
   height: 20px;
   border-radius: 50%;
@@ -333,44 +391,17 @@
 .wc-cell:hover .wc-add-btn {
   opacity: 1;
 }
-
 .wc-add-btn:hover {
   background: var(--accent);
   border-color: var(--accent);
   color: #fff;
   transform: scale(1.1);
 }
-
 .wc-add-btn:active {
   transform: scale(0.95);
 }
 
-.wc-cell.disabled {
-  cursor: not-allowed;
-  background: repeating-linear-gradient(
-    135deg,
-    transparent,
-    transparent 4px,
-    rgba(0, 0, 0, 0.04) 4px,
-    rgba(0, 0, 0, 0.04) 5px
-  );
-}
-
-.wc-cell.disabled .wc-day-num {
-  color: var(--text-muted);
-  opacity: 0.5;
-}
-
-.wc-cell.disabled:hover {
-  background: repeating-linear-gradient(
-    135deg,
-    transparent,
-    transparent 4px,
-    rgba(0, 0, 0, 0.04) 4px,
-    rgba(0, 0, 0, 0.04) 5px
-  );
-}
-
+/* ─── Disabled line ───────────────────────────────────────────────────────── */
 .wc-disabled-line {
   position: absolute;
   top: 50%;
@@ -382,38 +413,7 @@
   pointer-events: none;
 }
 
-.wc-cell.selectable {
-  cursor: pointer;
-}
-
-/* Multi-select: selected cell highlight */
-.wc-cell.selected {
-  background: var(--accent-soft) !important;
-  outline: 2px solid var(--accent);
-  outline-offset: -2px;
-}
-
-.wc-cell.selected .wc-day-num {
-  background: var(--accent);
-  color: #fff;
-}
-
-/* Checkmark tick shown on selected cells */
-.wc-check-tick {
-  position: absolute;
-  bottom: 7px;
-  left: 10px;
-  font-size: 11px;
-  color: var(--accent);
-  font-weight: 700;
-  line-height: 1;
-}
-
-.wc-cell.weekend-cell .wc-day-num {
-  color: var(--text-muted);
-}
-
-/* Week number column indicator */
+/* ─── Week badge ──────────────────────────────────────────────────────────── */
 .wc-week-badge {
   position: absolute;
   bottom: 6px;
@@ -425,61 +425,191 @@
   letter-spacing: 0.05em;
 }
 
-/* Stats strip */
-.wc-stats {
+/* ─── Event tracks ────────────────────────────────────────────────────────── */
+.wc-events {
   display: flex;
-  gap: 12px;
-  margin-top: 16px;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
 }
 
-.wc-stat {
+.wc-event-track {
+  position: relative;
+  min-width: 0;
+  cursor: pointer;
+}
+
+/* Default event pill */
+.wc-event-pill {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 7px;
+  border-radius: 4px;
+  min-width: 0;
+  transition:
+    filter 0.12s,
+    transform 0.1s;
+}
+
+.wc-event-track:hover .wc-event-pill {
+  filter: brightness(0.92);
+  transform: translateX(1px);
+}
+
+.wc-event-label {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.4;
+}
+
+/* ─── Overflow chip ───────────────────────────────────────────────────────── */
+.wc-overflow-chip {
+  display: inline-flex;
+  align-items: center;
+  height: 20px;
+  padding: 0 7px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-muted);
+  cursor: pointer;
+  letter-spacing: 0.02em;
+  transition:
+    border-color 0.15s,
+    color 0.15s,
+    background 0.15s;
+  align-self: flex-start;
+}
+
+.wc-overflow-chip:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+
+/* ─── Tooltip ─────────────────────────────────────────────────────────────── */
+.wc-tooltip {
+  position: absolute;
+  left: 0;
+  z-index: 100;
+  min-width: 180px;
+  max-width: 260px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  padding: 10px 16px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex: 1;
-  min-width: 140px;
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.1),
+    0 1px 4px rgba(0, 0, 0, 0.06);
+  pointer-events: none;
+  animation: wc-tooltip-in 0.12s ease;
 }
 
-.wc-stat-dot {
+@keyframes wc-tooltip-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.wc-tooltip-inner {
+  padding: 10px 12px;
+}
+
+.wc-tooltip-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.wc-tooltip-dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
   flex-shrink: 0;
 }
 
-.wc-stat-dot.accent {
-  background: var(--accent);
-}
-.wc-stat-dot.success {
-  background: var(--success);
-}
-.wc-stat-dot.muted {
-  background: var(--text-muted);
+.wc-tooltip-title {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.3;
 }
 
-.wc-stat-info {
+.wc-tooltip-data {
+  margin: 0;
+  padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 1px;
+  gap: 4px;
 }
 
-.wc-stat-value {
+.wc-tooltip-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.wc-tooltip-key {
   font-family: var(--font-mono);
-  font-size: 16px;
-  font-weight: 500;
-  color: var(--text-primary);
-  line-height: 1;
-}
-
-.wc-stat-label {
   font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
   color: var(--text-muted);
-  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  flex-shrink: 0;
+  min-width: 56px;
+}
+
+.wc-tooltip-val {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  color: var(--text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin: 0;
+}
+
+/* ─── Dynamic event legend ────────────────────────────────────────────────── */
+.wc-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  margin-top: 14px;
+  padding: 10px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.wc-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.wc-legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.wc-legend-label {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  color: var(--text-secondary);
+  white-space: nowrap;
 }
