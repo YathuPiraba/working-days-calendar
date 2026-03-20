@@ -6,7 +6,7 @@ import { useMemo } from "react";
 import type { CalendarEvent } from "../types";
 import { DEFAULT_COLOR } from "../utils";
 
-export function LegendStrip({ events }: { events: CalendarEvent[] }) {
+export default function LegendStrip({ events }: { events: CalendarEvent[] }) {
   const entries = useMemo(() => {
     const seen = new Set<string>();
     const result: { color: string; label: string }[] = [];

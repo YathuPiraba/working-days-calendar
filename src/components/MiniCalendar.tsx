@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import type { MiniCalendarProps } from "../types";
 import "../css/MiniCalendar.css";
 
 const MONTHS = [
@@ -15,14 +16,6 @@ const MONTHS = [
   "November",
   "December",
 ];
-
-interface MiniCalendarProps {
-  currentMonth: number; // 0-indexed
-  currentYear: number;
-  onSelect: (month: number, year: number) => void;
-  onClose: () => void;
-  anchorRef: React.RefObject<HTMLElement | null>;
-}
 
 export default function MiniCalendar({
   currentMonth,

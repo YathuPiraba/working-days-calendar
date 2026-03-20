@@ -1,7 +1,7 @@
 import { useRef } from "react";
 import type { OverflowChipProps } from "../types";
 
-export function OverflowChip({
+export default function OverflowChip({
   dayKey: _dayKey,
   hiddenCount,
   allCellEvents: _all,

@@ -12,18 +12,14 @@ import {
   startOfMonth,
   startOfWeek,
 } from "date-fns";
+import { toDateKey, resolveEventTz, LOCAL_TZ } from "../utils/tz";
 import MiniCalendar from "./MiniCalendar";
-import { OverflowDialog } from "./OverflowDialog";
-import { EventPill } from "./EventPill";
-import { LegendStrip } from "./LegendStrip";
-import { OverflowChip } from "./OverflowChip";
+import OverflowDialog from "./OverflowDialog";
+import EventPill from "./EventPill";
+import LegendStrip from "./LegendStrip";
+import OverflowChip from "./OverflowChip";
 import type { CalendarEvent, WorkingCalendarProps } from "../types";
-import {
-  DEFAULT_MAX_VISIBLE,
-  normalizeToDateKey,
-  validateEvents,
-  WEEKDAYS,
-} from "../utils";
+import { DEFAULT_MAX_VISIBLE, validateEvents, WEEKDAYS } from "../utils";
 import "../css/WorkingCalendar.css";
 
 export default function WorkingCalendar({
@@ -39,6 +35,7 @@ export default function WorkingCalendar({
   renderTooltip,
   onEventClick,
   hideLegend = false,
+  calendarTimezone,
 }: WorkingCalendarProps = {}) {
   const today = new Date();
   const [viewDate, setViewDate] = useState(
@@ -64,7 +61,8 @@ export default function WorkingCalendar({
   const eventsByDate = useMemo(() => {
     const map = new Map<string, CalendarEvent[]>();
     for (const ev of validatedEvents) {
-      const key = normalizeToDateKey(ev.date);
+      const tz = resolveEventTz(ev.timezone, calendarTimezone);
+      const key = toDateKey(ev.date, tz);
       if (!key) continue;
       if (!map.has(key)) map.set(key, []);
       map.get(key)!.push(ev);
@@ -81,10 +79,12 @@ export default function WorkingCalendar({
   const disabledSet = useMemo<Set<string>>(() => {
     const all: Array<string | Date | number> = [...disabledDates];
     if (disableDate !== undefined) all.push(disableDate);
+    // Disabled dates use calendarTimezone (no per-date timezone on disabled entries)
+    const tz = calendarTimezone ?? LOCAL_TZ;
     return new Set(
-      all.map(normalizeToDateKey).filter((k): k is string => k !== null),
+      all.map((d) => toDateKey(d, tz)).filter((k): k is string => k !== null),
     );
-  }, [disableDate, disabledDates]);
+  }, [disableDate, disabledDates, calendarTimezone]);
 
   const monthStart = startOfMonth(viewDate);
   const monthEnd = endOfMonth(viewDate);
@@ -304,6 +304,7 @@ export default function WorkingCalendar({
                           renderEvent={renderEvent}
                           renderTooltip={renderTooltip}
                           onEventClick={onEventClick}
+                          calendarTimezone={calendarTimezone}
                         />
                       ))}
                     </div>
@@ -351,6 +352,7 @@ export default function WorkingCalendar({
           onClose={() => setOverflowDialog(null)}
           onEventClick={onEventClick}
           renderTooltip={renderTooltip}
+          calendarTimezone={calendarTimezone}
         />
       )}
     </div>

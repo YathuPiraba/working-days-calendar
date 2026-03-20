@@ -2,15 +2,16 @@ import { useEffect, useRef, useState } from "react";
 import type { CalendarEvent, OverflowDialogProps } from "../types";
 import { DEFAULT_COLOR, formatDateLabel } from "../utils";
 import "../css/OverflowDialog.css";
-import { DefaultDetail } from "./DefaultDetail";
+import DefaultDetail from "./DefaultDetail";
 
-export function OverflowDialog({
+export default function OverflowDialog({
   dateKey,
   events,
   anchorRef,
   onClose,
   onEventClick,
   renderTooltip,
+  calendarTimezone,
 }: OverflowDialogProps) {
   const [activeId, setActiveId] = useState<string>(events[0]?.id ?? "");
   const [position, setPosition] = useState<React.CSSProperties>({});
@@ -123,7 +124,11 @@ export function OverflowDialog({
                 {renderTooltip(activeEvent)}
               </div>
             ) : (
-              <DefaultDetail event={activeEvent} onEventClick={onEventClick} />
+              <DefaultDetail
+                event={activeEvent}
+                onEventClick={onEventClick}
+                calendarTimezone={calendarTimezone}
+              />
             )
           ) : (
             <div className="wc-od-empty">No event selected</div>

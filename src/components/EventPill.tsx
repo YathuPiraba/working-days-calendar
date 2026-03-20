@@ -1,15 +1,21 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { EventPillProps } from "../types";
+import type { CalendarEvent, EventPillProps } from "../types";
 import { DEFAULT_COLOR, getForegroundColor } from "../utils";
-import { DefaultTooltip } from "./ToolTip";
+import {
+  formatInTz,
+  getUtcOffset,
+  resolveEventTz,
+  LOCAL_TZ,
+} from "../utils/tz";
 
-export function EventPill({
+export default function EventPill({
   event,
   trackIndex,
   dateKey,
   renderEvent,
   renderTooltip,
   onEventClick,
+  calendarTimezone,
 }: EventPillProps) {
   const [tooltipOpen, setTooltipOpen] = useState(false);
   const [tooltipStyle, setTooltipStyle] = useState<React.CSSProperties>({});
@@ -48,13 +54,12 @@ export function EventPill({
   const tooltipContent = renderTooltip ? (
     renderTooltip(event)
   ) : (
-    <DefaultTooltip event={event} />
+    <DefaultTooltip event={event} calendarTimezone={calendarTimezone} />
   );
 
   const handleClick = useCallback(
     (e: React.MouseEvent) => {
       e.stopPropagation();
-      // Fire user-provided onEventClick first, then legacy event.onClick
       onEventClick?.(event);
       event.onClick?.(event);
     },
@@ -80,6 +85,63 @@ export function EventPill({
         >
           {tooltipContent}
         </div>
+      )}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Default tooltip
+// ---------------------------------------------------------------------------
+
+function DefaultTooltip({
+  event,
+  calendarTimezone,
+}: {
+  event: CalendarEvent;
+  calendarTimezone?: string;
+}) {
+  const color = event.color ?? DEFAULT_COLOR;
+  const tz = resolveEventTz(event.timezone, calendarTimezone);
+  const showTz = tz !== LOCAL_TZ || event.timezone;
+  const utcOffset = showTz ? getUtcOffset(tz) : null;
+  // Format the event time if the date includes a time component
+  const timeStr =
+    typeof event.date === "string" && event.date.includes("T")
+      ? formatInTz(event.date, tz, "MMM d, yyyy · h:mm a")
+      : null;
+
+  return (
+    <div className="wc-tooltip-inner">
+      <div className="wc-tooltip-header">
+        <span className="wc-tooltip-dot" style={{ background: color }} />
+        <span className="wc-tooltip-title">{event.label}</span>
+      </div>
+
+      {/* Timezone badge */}
+      {showTz && (
+        <div className="wc-tooltip-tz">
+          <span className="wc-tooltip-tz-name">{tz}</span>
+          {utcOffset && (
+            <span className="wc-tooltip-tz-offset">{utcOffset}</span>
+          )}
+        </div>
+      )}
+
+      {/* Formatted time */}
+      {timeStr && <div className="wc-tooltip-time">{timeStr}</div>}
+
+      {event.data && Object.keys(event.data).length > 0 && (
+        <dl className="wc-tooltip-data">
+          {Object.entries(event.data).map(([key, val]) => (
+            <div className="wc-tooltip-row" key={key}>
+              <dt className="wc-tooltip-key">{key}</dt>
+              <dd className="wc-tooltip-val">
+                {typeof val === "object" ? JSON.stringify(val) : String(val)}
+              </dd>
+            </div>
+          ))}
+        </dl>
       )}
     </div>
   );

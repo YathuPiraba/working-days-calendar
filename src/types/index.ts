@@ -24,6 +24,13 @@ export interface CalendarEvent {
   data?: Record<string, unknown>;
   /** Higher number = rendered first within a cell. Default: 0 */
   priority?: number;
+  /**
+   * IANA timezone string for this event's date, e.g. "America/New_York".
+   * When provided, the event is placed on the calendar day it falls on in that
+   * timezone rather than the viewer's local timezone.
+   * Overrides calendarTimezone on WorkingCalendarProps for this specific event.
+   */
+  timezone?: string;
   /** Called when the event pill (or custom renderEvent output) is clicked */
   onClick?: (event: CalendarEvent) => void;
 }
@@ -35,6 +42,7 @@ export interface EventPillProps {
   renderEvent?: WorkingCalendarProps["renderEvent"];
   renderTooltip?: WorkingCalendarProps["renderTooltip"];
   onEventClick?: (event: CalendarEvent) => void;
+  calendarTimezone?: string;
 }
 
 export interface OverflowDialogProps {
@@ -43,13 +51,14 @@ export interface OverflowDialogProps {
   /** All events for that date (not just the hidden ones) */
   events: CalendarEvent[];
   /** Ref to the overflow chip button — used to position the dialog */
-  anchorRef: React.RefObject<HTMLButtonElement>;
+  anchorRef: React.RefObject<HTMLButtonElement | null>;
   /** Called when the dialog should close */
   onClose: () => void;
   /** Forwarded from WorkingCalendarProps — fires when user clicks an event */
   onEventClick?: (event: CalendarEvent) => void;
   /** Forwarded from WorkingCalendarProps — custom right-page renderer */
   renderTooltip?: (event: CalendarEvent) => ReactNode;
+  calendarTimezone?: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -74,7 +83,7 @@ export interface MiniCalendarProps {
   currentYear: number;
   onSelect: (month: number, year: number) => void;
   onClose: () => void;
-  anchorRef: RefObject<HTMLButtonElement>;
+  anchorRef: RefObject<HTMLButtonElement | null>;
 }
 
 // ---------------------------------------------------------------------------
@@ -123,6 +132,16 @@ export interface WorkingCalendarProps {
    * navigate, or update state.
    */
   onEventClick?: (event: CalendarEvent) => void;
+
+  // — Timezone —
+  /**
+   * IANA timezone string applied to all events that do not specify their own
+   * timezone, e.g. "Europe/London". Defaults to the viewer's local timezone.
+   * Use this when your event dates come from an API in a known timezone.
+   *
+   * @example "UTC" | "America/New_York" | "Asia/Colombo"
+   */
+  calendarTimezone?: string;
 
   // — Legend —
   /**

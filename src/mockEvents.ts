@@ -1,11 +1,15 @@
-import type { CalendarEvent } from "../types";
+import type { CalendarEvent } from "./types";
 
 const year = new Date().getFullYear();
 const month = String(new Date().getMonth() + 1).padStart(2, "0");
 const d = (day: number) => `${year}-${month}-${String(day).padStart(2, "0")}`;
 
+// Full ISO datetime helpers — used for events that need tz-aware placement
+const dt = (day: number, time: string, tz = "+00:00") =>
+  `${year}-${month}-${String(day).padStart(2, "0")}T${time}:00${tz}`;
+
 export const mockEvents: CalendarEvent[] = [
-  // ── Day 3 — single event ──────────────────────────────────────────────
+  // ── Day 3 — single event, local date (no tz) ──────────────────────────
   {
     id: "evt-001",
     date: d(3),
@@ -48,7 +52,7 @@ export const mockEvents: CalendarEvent[] = [
     },
   },
 
-  // ── Day 8 — overflow (4 events, maxVisibleEvents defaults to 3) ───────
+  // ── Day 8 — overflow (4 events) ───────────────────────────────────────
   {
     id: "evt-004",
     date: d(8),
@@ -63,7 +67,9 @@ export const mockEvents: CalendarEvent[] = [
   },
   {
     id: "evt-005",
-    date: d(8),
+    // UTC datetime — tooltip will show "UTC+0" badge
+    date: dt(8, "15:00"),
+    timezone: "UTC",
     label: "Budget review",
     color: "#E67E22",
     priority: 3,
@@ -97,7 +103,7 @@ export const mockEvents: CalendarEvent[] = [
     },
   },
 
-  // ── Day 12 — single event, CSS var color ─────────────────────────────
+  // ── Day 12 — public holiday, no tz needed ────────────────────────────
   {
     id: "evt-008",
     date: d(12),
@@ -111,12 +117,14 @@ export const mockEvents: CalendarEvent[] = [
   // ── Day 14 — two events ───────────────────────────────────────────────
   {
     id: "evt-009",
-    date: d(14),
+    // New York office call — placed on the correct local day for NY viewers
+    date: dt(14, "14:30", "-05:00"),
+    timezone: "America/New_York",
     label: "Sprint planning",
     color: "#1D9E75",
     priority: 2,
     data: {
-      time: "09:30 AM",
+      time: "09:30 AM EST",
       sprint: "Sprint 23",
       points: "42 estimated",
       facilitator: "Emma L.",
@@ -136,7 +144,7 @@ export const mockEvents: CalendarEvent[] = [
     },
   },
 
-  // ── Day 17 — overflow (5 events) ──────────────────────────────────────
+  // ── Day 17 — overflow (5 events), mix of tz and plain dates ──────────
   {
     id: "evt-011",
     date: d(17),
@@ -152,7 +160,9 @@ export const mockEvents: CalendarEvent[] = [
   },
   {
     id: "evt-012",
-    date: d(17),
+    // London team — BST (UTC+1) in summer
+    date: dt(17, "10:00", "+01:00"),
+    timezone: "Europe/London",
     label: "Hiring panel",
     color: "#9B59B6",
     priority: 4,
@@ -199,7 +209,7 @@ export const mockEvents: CalendarEvent[] = [
     },
   },
 
-  // ── Day 20 — today area, single event ─────────────────────────────────
+  // ── Day 20 — today, one tz-aware event ────────────────────────────────
   {
     id: "evt-016",
     date: d(20),
@@ -214,19 +224,21 @@ export const mockEvents: CalendarEvent[] = [
   },
   {
     id: "evt-017",
-    date: d(20),
+    // Colombo office — IST (UTC+5:30). Tooltip shows "Asia/Colombo · UTC+5:30"
+    date: dt(20, "08:30", "+05:30"),
+    timezone: "Asia/Colombo",
     label: "User interviews",
     color: "#9B59B6",
     priority: 1,
     data: {
       participants: "3 users",
       researcher: "Dana W.",
-      time: "2:00 PM",
+      time: "2:00 PM IST",
       tool: "Maze",
     },
   },
 
-  // ── Day 23 — single low-priority event ───────────────────────────────
+  // ── Day 23 — plain local date ─────────────────────────────────────────
   {
     id: "evt-018",
     date: d(23),
@@ -254,7 +266,9 @@ export const mockEvents: CalendarEvent[] = [
   },
   {
     id: "evt-020",
-    date: d(25),
+    // Tokyo on-call handoff — JST (UTC+9)
+    date: dt(25, "09:00", "+09:00"),
+    timezone: "Asia/Tokyo",
     label: "On-call handoff",
     color: "#E67E22",
     priority: 1,
@@ -265,7 +279,7 @@ export const mockEvents: CalendarEvent[] = [
     },
   },
 
-  // ── Day 28 — end of month wrap-up ─────────────────────────────────────
+  // ── Day 28 — end of month ─────────────────────────────────────────────
   {
     id: "evt-021",
     date: d(28),

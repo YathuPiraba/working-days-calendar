@@ -1,4 +1,3 @@
-import { format, isValid, parseISO } from "date-fns";
 import type { CalendarEvent } from "../types";
 
 // ---------------------------------------------------------------------------
@@ -53,33 +52,6 @@ export function validateEvents(raw: unknown[]): {
 export const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 export const DEFAULT_COLOR = "#6366f1";
 export const DEFAULT_MAX_VISIBLE = 3;
-
-export function normalizeToDateKey(raw: string | Date | number): string | null {
-  try {
-    if (raw instanceof Date || typeof raw === "number") {
-      const d = new Date(raw);
-      return isValid(d) ? format(d, "yyyy-MM-dd") : null;
-    }
-    if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
-      const d = parseISO(raw);
-      return isValid(d) ? raw : null;
-    }
-    if (/^\d{2}\/\d{2}\/\d{4}$/.test(raw)) {
-      const [mm, dd, yyyy] = raw.split("/");
-      const d = new Date(`${yyyy}-${mm}-${dd}`);
-      return isValid(d) ? format(d, "yyyy-MM-dd") : null;
-    }
-    if (/^\d{2}-\d{2}-\d{4}$/.test(raw)) {
-      const [dd, mm, yyyy] = raw.split("-");
-      const d = new Date(`${yyyy}-${mm}-${dd}`);
-      return isValid(d) ? format(d, "yyyy-MM-dd") : null;
-    }
-    const d = new Date(raw);
-    return isValid(d) ? format(d, "yyyy-MM-dd") : null;
-  } catch {
-    return null;
-  }
-}
 
 /**
  * Derives a foreground color (near-black or white) from any CSS color string

@@ -4,7 +4,7 @@
 import type { CalendarEvent } from "../types";
 import { DEFAULT_COLOR } from "../utils";
 
-export function DefaultTooltip({ event }: { event: CalendarEvent }) {
+export default function DefaultTooltip({ event }: { event: CalendarEvent }) {
   return (
     <div className="wc-tooltip-inner">
       <div className="wc-tooltip-header">
