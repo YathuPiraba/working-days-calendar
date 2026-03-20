@@ -1,0 +1,21 @@
+# Source (users get dist/ only)
+src/
+public/
+docs/
+
+# Config files
+vite.config.ts
+vite.lib.config.ts
+tsconfig*.json
+eslint.config.*
+.eslintrc*
+.prettierrc*
+
+# Dev / CI
+.github/
+.husky/
+*.log
+*.tgz
+
+# Demo app
+index.html

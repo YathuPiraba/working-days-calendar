@@ -1,19 +1,70 @@
 {
-  "name": "working-days-calendar",
-  "private": true,
-  "version": "0.0.0",
+  "name": "react-working-days-calendar",
+  "version": "1.0.0",
+  "description": "A fully-featured, timezone-aware working days calendar component for React",
   "type": "module",
+  "main": "dist/index.cjs.js",
+  "module": "dist/index.esm.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.esm.js",
+      "require": "./dist/index.cjs.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./dist/style.css": "./dist/react-working-days-calendar.css"
+  },
+  "files": [
+    "dist"
+  ],
+  "sideEffects": [
+    "*.css"
+  ],
   "scripts": {
     "dev": "vite",
+    "build:lib": "vite build --config vite.lib.config.ts",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "prepublishOnly": "npm run build:lib"
+  },
+  "keywords": [
+    "react",
+    "react calendar",
+    "react calendar component",
+    "event calendar",
+    "react event calendar",
+    "working days calendar",
+    "react working days calendar",
+    "scheduler",
+    "react scheduler",
+    "team calendar",
+    "calendar ui",
+    "calendar component",
+    "date picker",
+    "react date picker",
+    "event scheduler",
+    "typescript",
+    "vite",
+    "timezone calendar"
+  ],
+  "author": "YathuPiraba",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/YathuPiraba/working-days-calendar.git"
+  },
+  "homepage": "https://github.com/YathuPiraba/working-days-calendar#readme",
+  "bugs": {
+    "url": "https://github.com/YathuPiraba/working-days-calendar/issues"
+  },
+  "peerDependencies": {
+    "react": ">=17.0.0",
+    "react-dom": ">=17.0.0"
   },
   "dependencies": {
     "date-fns": "^4.1.0",
-    "date-fns-tz": "^3.2.0",
-    "react": "^19.2.4",
-    "react-dom": "^19.2.4"
+    "date-fns-tz": "^3.2.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.4",
@@ -27,6 +78,7 @@
     "globals": "^17.4.0",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.57.0",
-    "vite": "^8.0.1"
+    "vite": "^8.0.1",
+    "vite-plugin-dts": "^4.5.4"
   }
 }
