@@ -14,9 +14,9 @@ function App() {
       }}
     >
       <WorkingCalendar
-        legend="Working "
-        multiSelect
-        onMultiSelect={(dates) => console.log(dates)}
+        onAddClick={(date) => {
+          console.log(date);
+        }}
       />
     </div>
   );

@@ -345,7 +345,43 @@
   transform: scale(0.95);
 }
 
-/* Multi-select: selectable cells get pointer cursor */
+.wc-cell.disabled {
+  cursor: not-allowed;
+  background: repeating-linear-gradient(
+    135deg,
+    transparent,
+    transparent 4px,
+    rgba(0, 0, 0, 0.04) 4px,
+    rgba(0, 0, 0, 0.04) 5px
+  );
+}
+
+.wc-cell.disabled .wc-day-num {
+  color: var(--text-muted);
+  opacity: 0.5;
+}
+
+.wc-cell.disabled:hover {
+  background: repeating-linear-gradient(
+    135deg,
+    transparent,
+    transparent 4px,
+    rgba(0, 0, 0, 0.04) 4px,
+    rgba(0, 0, 0, 0.04) 5px
+  );
+}
+
+.wc-disabled-line {
+  position: absolute;
+  top: 50%;
+  left: 8px;
+  right: 8px;
+  height: 1px;
+  background: var(--text-muted);
+  opacity: 0.25;
+  pointer-events: none;
+}
+
 .wc-cell.selectable {
   cursor: pointer;
 }

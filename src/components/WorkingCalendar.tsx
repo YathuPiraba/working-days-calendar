@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useRef, useMemo, useState } from "react";
 import {
   addMonths,
   eachDayOfInterval,
@@ -9,6 +9,8 @@ import {
   getWeek,
   isToday,
   isWeekend,
+  isValid,
+  parseISO,
   startOfMonth,
   startOfWeek,
 } from "date-fns";
@@ -21,18 +23,65 @@ function getWorkingDays(days: Date[]): number {
   return days.filter((d) => !isWeekend(d)).length;
 }
 
+/**
+ * Normalizes any date input the user might pass into a 'yyyy-MM-dd' string.
+ * Accepts: 'yyyy-MM-dd' | 'MM/dd/yyyy' | 'dd-MM-yyyy' | Date object | timestamp number.
+ * Invalid values are silently dropped so one bad entry never breaks the whole calendar.
+ */
+function normalizeToDateKey(raw: string | Date | number): string | null {
+  try {
+    // Already a Date object or timestamp
+    if (raw instanceof Date || typeof raw === "number") {
+      const d = new Date(raw);
+      return isValid(d) ? format(d, "yyyy-MM-dd") : null;
+    }
+    // ISO string yyyy-MM-dd
+    if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
+      const d = parseISO(raw);
+      return isValid(d) ? raw : null;
+    }
+    // MM/dd/yyyy  (US locale format)
+    if (/^\d{2}\/\d{2}\/\d{4}$/.test(raw)) {
+      const [mm, dd, yyyy] = raw.split("/");
+      const d = new Date(`${yyyy}-${mm}-${dd}`);
+      return isValid(d) ? format(d, "yyyy-MM-dd") : null;
+    }
+    // dd-MM-yyyy  (European locale format)
+    if (/^\d{2}-\d{2}-\d{4}$/.test(raw)) {
+      const [dd, mm, yyyy] = raw.split("-");
+      const d = new Date(`${yyyy}-${mm}-${dd}`);
+      return isValid(d) ? format(d, "yyyy-MM-dd") : null;
+    }
+    // Fallback: let Date constructor try — handles RFC strings etc.
+    const d = new Date(raw);
+    return isValid(d) ? format(d, "yyyy-MM-dd") : null;
+  } catch {
+    return null;
+  }
+}
+
 interface WorkingCalendarProps {
   legend?: string;
+  disableDate?: string | Date | number;
+  disabledDates?: Array<string | Date | number>;
   multiSelect?: boolean;
   onAddClick?: (date: string) => void;
   onMultiSelect?: (dates: string[]) => void;
+  weekendDays?: number;
+  workingDays?: number;
+  workHours?: number;
 }
 
 export default function WorkingCalendar({
   legend,
+  disableDate,
+  disabledDates = [],
   multiSelect = false,
   onAddClick,
   onMultiSelect,
+  weekendDays: weekendDaysProp,
+  workingDays: workingDaysProp,
+  workHours: workHoursProp,
 }: WorkingCalendarProps = {}) {
   const today = new Date();
   const [viewDate, setViewDate] = useState(
@@ -41,6 +90,15 @@ export default function WorkingCalendar({
   const [showMini, setShowMini] = useState(false);
   const [selectedDates, setSelectedDates] = useState<Set<string>>(new Set());
   const monthBtnRef = useRef<HTMLButtonElement>(null);
+
+  const disabledSet = useMemo<Set<string>>(() => {
+    const all: Array<string | Date | number> = [...disabledDates];
+    if (disableDate !== undefined) all.push(disableDate);
+    const keys = all
+      .map(normalizeToDateKey)
+      .filter((k): k is string => k !== null);
+    return new Set(keys);
+  }, [disableDate, disabledDates]);
 
   const monthStart = startOfMonth(viewDate);
   const monthEnd = endOfMonth(viewDate);
@@ -51,8 +109,12 @@ export default function WorkingCalendar({
   const monthDays = eachDayOfInterval({ start: monthStart, end: monthEnd });
 
   const totalDays = monthDays.length;
-  const workingDays = getWorkingDays(monthDays);
-  const weekendDays = totalDays - workingDays;
+  const computedWorkingDays = getWorkingDays(monthDays);
+  const computedWeekendDays = totalDays - computedWorkingDays;
+
+  const statWorkingDays = workingDaysProp ?? computedWorkingDays;
+  const statWeekendDays = weekendDaysProp ?? computedWeekendDays;
+  const statWorkHours = workHoursProp ?? computedWorkingDays * 8;
 
   const rows: Date[][] = [];
   for (let i = 0; i < allDays.length; i += 7) {
@@ -72,6 +134,7 @@ export default function WorkingCalendar({
 
   const toggleDaySelection = (day: Date) => {
     const key = format(day, "yyyy-MM-dd");
+    if (disabledSet.has(key)) return;
     setSelectedDates((prev) => {
       const next = new Set(prev);
       next.has(key) ? next.delete(key) : next.add(key);
@@ -80,8 +143,9 @@ export default function WorkingCalendar({
   };
 
   const handleHeaderAdd = () => {
-    // Returns plain 'yyyy-MM-dd' strings — no timezone ambiguity
-    const sorted = Array.from(selectedDates).sort();
+    const sorted = Array.from(selectedDates)
+      .filter((k) => !disabledSet.has(k))
+      .sort();
     onMultiSelect?.(sorted);
   };
 
@@ -194,6 +258,7 @@ export default function WorkingCalendar({
               const dayOfWeek = getDay(day);
               const showWeek = dayOfWeek === 0;
               const dayKey = format(day, "yyyy-MM-dd");
+              const isDisabled = !outside && disabledSet.has(dayKey);
               const isSelected = multiSelect && selectedDates.has(dayKey);
 
               return (
@@ -205,38 +270,39 @@ export default function WorkingCalendar({
                     weekend && !outside ? "weekend-cell" : "",
                     todayCell ? "today" : "",
                     isLastRow ? "last-row" : "",
-                    multiSelect && !outside ? "selectable" : "",
+                    isDisabled ? "disabled" : "",
+                    multiSelect && !outside && !isDisabled ? "selectable" : "",
                     isSelected ? "selected" : "",
                   ]
                     .filter(Boolean)
                     .join(" ")}
                   onClick={() => {
-                    if (multiSelect && !outside) toggleDaySelection(day);
+                    if (multiSelect && !outside && !isDisabled)
+                      toggleDaySelection(day);
                   }}
                 >
                   <span className="wc-day-num">{format(day, "d")}</span>
-
-                  {/* + button: only in single-select mode — explicitly blocked when multiSelect=true */}
-                  {!multiSelect && !outside && (
+                  {!multiSelect && !outside && !isDisabled && onAddClick && (
                     <button
                       className="wc-add-btn"
                       aria-label={`Add event on ${format(day, "PPP")}`}
                       onClick={(e) => {
                         e.stopPropagation();
-                        // Guard: never fires if multiSelect is true
-                        if (!multiSelect)
-                          onAddClick?.(format(day, "yyyy-MM-dd"));
+                        if (!multiSelect && !isDisabled) onAddClick?.(dayKey);
                       }}
                     >
                       +
                     </button>
                   )}
 
-                  {/* Checkmark shown when this day is selected in multi-select mode */}
                   {isSelected && (
                     <span className="wc-check-tick" aria-hidden="true">
                       ✓
                     </span>
+                  )}
+
+                  {isDisabled && (
+                    <span className="wc-disabled-line" aria-hidden="true" />
                   )}
 
                   {showWeek && !outside && (
@@ -254,28 +320,21 @@ export default function WorkingCalendar({
         <div className="wc-stat">
           <div className="wc-stat-dot accent" />
           <div className="wc-stat-info">
-            <span className="wc-stat-value">{workingDays}</span>
+            <span className="wc-stat-value">{statWorkingDays}</span>
             <span className="wc-stat-label">Working days</span>
           </div>
         </div>
         <div className="wc-stat">
           <div className="wc-stat-dot muted" />
           <div className="wc-stat-info">
-            <span className="wc-stat-value">{weekendDays}</span>
+            <span className="wc-stat-value">{statWeekendDays}</span>
             <span className="wc-stat-label">Weekend days</span>
           </div>
         </div>
         <div className="wc-stat">
           <div className="wc-stat-dot success" />
           <div className="wc-stat-info">
-            <span className="wc-stat-value">{totalDays}</span>
-            <span className="wc-stat-label">Total days</span>
-          </div>
-        </div>
-        <div className="wc-stat">
-          <div className="wc-stat-dot accent" />
-          <div className="wc-stat-info">
-            <span className="wc-stat-value">{workingDays * 8}</span>
+            <span className="wc-stat-value">{statWorkHours}</span>
             <span className="wc-stat-label">Work hours</span>
           </div>
         </div>
