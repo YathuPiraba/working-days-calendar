@@ -1,8 +1,10 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import type { EventPillProps } from "../types";
 import { DEFAULT_COLOR, getForegroundColor } from "../utils";
 import SpanPill from "./SpanPill";
 import DefaultTooltip from "./DefaultTooltip";
+import TooltipPortal from "./TooltipPortal";
+import { useTooltipPosition } from "../hooks/useTooltipPosition";
 
 export default function EventPill({
   event,
@@ -16,7 +18,6 @@ export default function EventPill({
   calendarTimezone,
 }: EventPillProps) {
   const [tooltipOpen, setTooltipOpen] = useState(false);
-  const [tooltipStyle, setTooltipStyle] = useState<React.CSSProperties>({});
   const pillRef = useRef<HTMLDivElement>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
 
@@ -24,9 +25,7 @@ export default function EventPill({
   const fg = useMemo(() => getForegroundColor(color), [color]);
 
   const isContinuation = spanRole === "mid";
-
   const showLabel = spanRole !== "mid" && spanRole !== "end";
-
   const showTooltip = spanRole !== "mid";
 
   const handleMouseEnter = useCallback(() => {
@@ -35,25 +34,7 @@ export default function EventPill({
 
   const handleMouseLeave = useCallback(() => setTooltipOpen(false), []);
 
-  useEffect(() => {
-    if (!tooltipOpen || !pillRef.current || !tooltipRef.current) return;
-
-    const pillRect = pillRef.current.getBoundingClientRect();
-    const tipH = tooltipRef.current.offsetHeight;
-    const tipW = tooltipRef.current.offsetWidth;
-    const vw = window.innerWidth;
-    const vh = window.innerHeight;
-
-    const spaceBelow = vh - pillRect.bottom;
-    const top =
-      spaceBelow < tipH + 12 ? pillRect.top - tipH - 6 : pillRect.bottom + 6;
-
-    let left = pillRect.left;
-    if (left + tipW > vw - 12) left = vw - tipW - 12;
-    if (left < 8) left = 8;
-
-    setTooltipStyle({ position: "fixed", top, left, zIndex: 9999 });
-  }, [tooltipOpen]);
+  const tooltipStyle = useTooltipPosition(tooltipOpen, pillRef, tooltipRef);
 
   const ctx = { dateKey, trackIndex, tooltipOpen };
 
@@ -87,25 +68,29 @@ export default function EventPill({
   );
 
   return (
-    <div
-      ref={pillRef}
-      className={`wc-event-track wc-span-${spanRole}`}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-      onClick={handleClick}
-    >
-      {pillContent}
+    <>
+      <div
+        ref={pillRef}
+        className={`wc-event-track wc-span-${spanRole}`}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        onClick={handleClick}
+      >
+        {pillContent}
+      </div>
 
-      {tooltipOpen && showTooltip && (
-        <div
-          ref={tooltipRef}
-          className="wc-tooltip"
-          style={tooltipStyle}
-          role="tooltip"
-        >
-          {tooltipContent}
-        </div>
+      {showTooltip && (
+        <TooltipPortal open={tooltipOpen}>
+          <div
+            ref={tooltipRef}
+            className="wc-tooltip"
+            style={tooltipStyle}
+            role="tooltip"
+          >
+            {tooltipContent}
+          </div>
+        </TooltipPortal>
       )}
-    </div>
+    </>
   );
 }

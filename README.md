@@ -244,20 +244,6 @@ Events with no time component appear in a sticky strip above the time grid. Mult
 
 ![Week view – all-day banner](https://raw.githubusercontent.com/YathuPiraba/working-days-calendar/master/docs/weekview-allday.png)
 
-### Month / Week Toggle
-
-```tsx
-<WorkingCalendar
-  legend="Team Calendar"
-  events={mockEvents}
-  weekView
-  onViewChange={(view) => console.log("view changed", view)}
-  onWeekChange={(weekStart) => console.log("week changed", weekStart)}
-/>
-```
-
-![Month / Week toggle](https://raw.githubusercontent.com/YathuPiraba/working-days-calendar/master/docs/weekview-toggle.png)
-
 ### Overlapping Timed Events
 
 Timed events that overlap are automatically placed in side-by-side columns within the day.
@@ -354,8 +340,6 @@ Hover over a timed event to see the timezone badge and formatted time in the too
   onEventClick={(event) => console.log("event clicked", event)}
 />
 ```
-
-![Tooltip – timed event with timezone](https://raw.githubusercontent.com/YathuPiraba/working-days-calendar/master/docs/tooltip-timed.png)
 
 Hovering a multi-day event shows the full date range in the tooltip.
 
