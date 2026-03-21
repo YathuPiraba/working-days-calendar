@@ -542,27 +542,52 @@ The component uses CSS custom properties. Override them in your global styleshee
 
 ---
 
-### 1.0.0
+## 1.0.0
 
-- Initial release
-- Monthly grid with event pills, overflow dialog, tooltips
-- Timezone-aware event placement via `date-fns-tz`
-- Multi-date selection mode
-- Mini calendar picker
-- Custom `renderEvent` and `renderTooltip` slots
-- Dynamic legend strip
-- Disabled dates support
-- **Multi-day spanning events** — add `endDate` to any `CalendarEvent` to stretch pills across cells
-- **Week view** — hourly time axis, overlap-aware event columns, current-time indicator
-- **All-day banner** — events without a time component appear in a sticky strip above the week view time grid; multi-day all-day events span the correct columns
-- **Month / Week toggle** — enabled via `weekView` prop; animated sliding indicator
-- **`onWeekChange` callback** — fires when the visible week changes in week view
-- **`onViewChange` callback** — fires when the user switches between month and week view
-- **Week sync** — switching to week view snaps to the first week of the displayed month (or the current week if viewing the current month)
-- **Hover tooltips in week view** — same `DefaultTooltip` and `renderTooltip` used across month view, overflow dialog, and week view pills
-- **`CalendarView` type** exported — `"month" | "week"`
-- **`SpanRole`, `SpanSegment`, `SpanMap` types** exported
-- **`BannerEntry`, `PositionedEvent` types** exported
+### Highlights
+
+- **Month & Week views** with seamless toggle and synchronized navigation
+- **Multi-day spanning events** via `endDate` (supports month, week, and all-day banner)
+- **Week view with hourly time grid** and overlap-aware event positioning
+- **All-day banner** with correct multi-day spanning and sticky behavior
+- **Timezone-aware events** powered by `date-fns-tz`
+- **Unified tooltip system** across month, week, and overflow dialog
+- **Custom rendering support** via `renderEvent` and `renderTooltip`
+- **Overflow handling** with per-day dialog
+- **Multi-date selection mode**
+- **Mini calendar picker** for quick navigation
+- **Disabled dates support**
+- **Dynamic legend strip**
+
+### Developer APIs
+
+- `legend` — optional legend label displayed above the grid
+- `hideLegend` — toggle visibility of the legend strip
+
+- `events` — array of `CalendarEvent` objects
+- `onEventClick` — handler when an event is clicked
+
+- `renderEvent` — custom renderer for event pills
+- `renderTooltip` — custom renderer for tooltips
+
+- `calendarTimezone` — global timezone for event rendering
+
+- `disableDate` — disable a single date
+- `disabledDates` — disable multiple dates
+
+- `multiSelect` — enable multi-date selection mode
+- `onMultiSelectDates` — callback with selected dates
+- `multiSelectAddLabel` — custom label for multi-select action
+
+- `onDateClick` — handler when a date cell is clicked
+
+- `onMonthYearChange` — callback when month/year changes
+
+- `weekView` — enable week view mode
+- `onViewChange` — triggered when switching between month and week view
+- `onWeekChange` — triggered when the visible week changes
+
+- `eventActionLabel` — label for event-related actions (e.g., in dialogs)
 
 ---
 
