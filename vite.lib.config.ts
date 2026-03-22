@@ -1,6 +1,7 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import dts from "vite-plugin-dts";
+import cssInjectedByJsPlugin from "vite-plugin-css-injected-by-js";
 import { resolve } from "path";
 
 export default defineConfig({
@@ -20,6 +21,7 @@ export default defineConfig({
         "src/vite-env.d.ts",
       ],
     }),
+    cssInjectedByJsPlugin(),
   ],
   build: {
     lib: {

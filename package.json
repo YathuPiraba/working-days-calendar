@@ -11,15 +11,12 @@
       "import": "./dist/index.esm.js",
       "require": "./dist/index.cjs.js",
       "types": "./dist/index.d.ts"
-    },
-    "./dist/style.css": "./dist/react-working-days-calendar.css"
+    }
   },
   "files": [
     "dist"
   ],
-  "sideEffects": [
-    "*.css"
-  ],
+  "sideEffects": false,
   "scripts": {
     "dev": "vite",
     "build:lib": "vite build --config vite.lib.config.ts",
@@ -79,6 +76,7 @@
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.57.0",
     "vite": "^8.0.1",
+    "vite-plugin-css-injected-by-js": "^4.0.1",
     "vite-plugin-dts": "^4.5.4"
   }
 }
