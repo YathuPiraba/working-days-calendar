@@ -35,6 +35,7 @@ npm install react-working-days-calendar date-fns date-fns-tz
 
 ```tsx
 import WorkingCalendar from "react-working-days-calendar";
+import "react-working-days-calendar/dist/style.css";
 
 const events = [
   {
@@ -68,8 +69,6 @@ export default function App() {
   );
 }
 ```
-
-> **No CSS import needed.** Styles are automatically injected when the component mounts.
 
 ---
 
@@ -486,24 +485,6 @@ The legend strip is auto-generated from visible events in the current month view
 
 ---
 
-## CSS Customization
-
-The component injects its styles automatically — no separate CSS import needed. To theme the calendar, override the CSS custom properties in your global stylesheet:
-
-```css
-:root {
-  --wc-today-bg: #ede9fe; /* Today cell highlight */
-  --wc-today-color: #5b21b6; /* Today circle color */
-  --wc-weekend-bg: #f9fafb; /* Weekend column background */
-  --wc-disabled-bg: #f3f4f6; /* Disabled date background */
-  --wc-border: #e5e7eb; /* Grid border color */
-  --wc-header-bg: #ffffff; /* Header background */
-  --wc-selected-bg: #ede9fe; /* Multi-select selected cell */
-}
-```
-
----
-
 ## TypeScript
 
 All types are exported:
@@ -543,11 +524,33 @@ type SpanRole =
 
 ---
 
+## CSS Customization
+
+The component uses CSS custom properties. Override them in your global stylesheet to theme the calendar:
+
+```css
+:root {
+  --wc-today-bg: #ede9fe; /* Today cell highlight */
+  --wc-today-color: #5b21b6; /* Today circle color */
+  --wc-weekend-bg: #f9fafb; /* Weekend column background */
+  --wc-disabled-bg: #f3f4f6; /* Disabled date background */
+  --wc-border: #e5e7eb; /* Grid border color */
+  --wc-header-bg: #ffffff; /* Header background */
+  --wc-selected-bg: #ede9fe; /* Multi-select selected cell */
+}
+```
+
+---
+
 ## Changelog
+
+### 1.1.3
+
+- Patch fixes and dependency updates
 
 ### 1.1.2
 
-- **CSS-in-JS bundle** — styles are now automatically injected into the document at mount time; no separate CSS import is required
+- Patch fixes and dependency updates
 
 ### 1.1.1
 
